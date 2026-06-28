@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { DEFAULT_AGENT } from "../api/mock/agents.js";
 import AgentDashboardLayout from "../components/dashboard/AgentDashboardLayout";
@@ -68,7 +68,7 @@ function DashboardShell() {
       };
     }
     return DEFAULT_AGENT;
-  }, [user?.name]);
+  }, [user]);
 
   const pageMeta = getPageMeta(location.pathname);
 

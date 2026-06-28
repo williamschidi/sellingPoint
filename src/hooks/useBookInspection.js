@@ -58,19 +58,7 @@ export function useBookInspection(propertyId) {
     selectedTime,
   });
 
-  const {
-    clientDetails,
-    setClientDetails,
-    errors,
-    setErrors,
-    submitted,
-    isSubmitting,
-    submitError,
-    detailsEnabled,
-    showSummary,
-    handleSubmit,
-    resetSubmission,
-  } = form;
+  const { setErrors, resetSubmission } = form;
 
   const handleSelectDate = useCallback(
     (date) => {

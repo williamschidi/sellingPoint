@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';

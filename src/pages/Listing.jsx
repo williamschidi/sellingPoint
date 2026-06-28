@@ -41,7 +41,7 @@ function Listing() {
     setSearchKeyword(filters.keyword);
   }, [filters.keyword]);
 
-  const { items, total, totalPages, currentPage, loadState, error, reload } =
+  const { items, total, totalPages, currentPage, loadState, reload } =
     usePropertySearch(filters);
 
   const resultsLabel = buildResultsLabel(filters, { total });

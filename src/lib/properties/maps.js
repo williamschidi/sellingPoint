@@ -14,7 +14,7 @@ export function buildGoogleMapsUrl({ lat, lng, label = "" }) {
 /**
  * OpenStreetMap embed URL (no API key required).
  */
-export function buildOpenStreetMapEmbedUrl({ lat, lng, zoom = 14 }) {
+export function buildOpenStreetMapEmbedUrl({ lat, lng }) {
   if (lat == null || lng == null) return null;
 
   const delta = 0.02;

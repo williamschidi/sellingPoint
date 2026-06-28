@@ -1,5 +1,3 @@
-import { Link } from "react-router-dom";
-
 const ORGANIZATION_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "RealEstateAgent",
