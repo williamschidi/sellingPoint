@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
+import AgentRoute from "./components/auth/AgentRoute";
+import AuthRedirectNotice from "./components/auth/AuthRedirectNotice";
 import ErrorBoundaryRoute from "./components/common/ErrorBoundaryRoute";
 import PageLoader from "./components/common/PageLoader";
 import Layout from "./Layout";
@@ -32,9 +33,9 @@ function App() {
             <Route
               path="/dashboard/*"
               element={
-                <ProtectedRoute>
+                <AgentRoute>
                   <Dashboard />
-                </ProtectedRoute>
+                </AgentRoute>
               }
             />
             <Route path="/privacy" element={<Privacy />} />

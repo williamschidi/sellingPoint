@@ -1,19 +1,27 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   getSession,
+  isAuthEnabled,
   isAuthBackendConnected,
+  isMockAuthEnabled,
   signInWithEmail,
   signOut,
   signUpWithEmail,
 } from "../api/services/authService";
+import {
+  loadPendingRole,
+  savePendingRole,
+} from "../lib/auth/mockAuthStorage.js";
 
 /** @typedef {import('../types/auth.js').AuthUser} AuthUser */
+/** @typedef {import('../types/auth.js').UserRole} UserRole */
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [status, setStatus] = useState("loading");
+  const [pendingRole, setPendingRoleState] = useState(() => loadPendingRole());
 
   useEffect(() => {
     let cancelled = false;
@@ -33,11 +41,17 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
+  const setPendingRole = useCallback((role) => {
+    savePendingRole(role);
+    setPendingRoleState(role);
+  }, []);
+
   const signIn = useCallback(async (credentials) => {
     const result = await signInWithEmail(credentials);
     if (result.ok && result.user) {
       setUser(result.user);
       setStatus("authenticated");
+      setPendingRoleState(null);
     }
     return result;
   }, []);
@@ -47,6 +61,7 @@ export function AuthProvider({ children }) {
     if (result.ok && result.user) {
       setUser(result.user);
       setStatus("authenticated");
+      setPendingRoleState(null);
     }
     return result;
   }, []);
@@ -61,14 +76,20 @@ export function AuthProvider({ children }) {
     () => ({
       user,
       status,
+      pendingRole,
       isAuthenticated: Boolean(user),
       isGuest: !user,
-      authAvailable: isAuthBackendConnected(),
+      isAgent: user?.role === "agent",
+      isBuyer: user?.role === "buyer",
+      authAvailable: isAuthEnabled(),
+      authBackendConnected: isAuthBackendConnected(),
+      mockAuthEnabled: isMockAuthEnabled(),
+      setPendingRole,
       signIn,
       signUp,
       signOut: logout,
     }),
-    [user, status, signIn, signUp, logout]
+    [user, status, pendingRole, setPendingRole, signIn, signUp, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

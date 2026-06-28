@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
 import { Icon } from "@iconify/react";
 
-import { LIST_PROPERTY_MAILTO } from "../lib/properties/constants";
+import { useListPropertyEntry } from "../hooks/auth/useListPropertyEntry";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useSavedProperties } from "../context/SavedPropertiesContext";
 import PropertySearchForm from "./search/PropertySearchForm";
@@ -19,6 +19,7 @@ export default function Navbar() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const menuRef = useRef(null);
   const { savedCount } = useSavedProperties();
+  const goToListProperty = useListPropertyEntry();
 
   useFocusTrap(menuRef, isMenuOpen);
 
@@ -34,7 +35,9 @@ export default function Navbar() {
 
   useEffect(() => {
     if (location.pathname === "/properties") {
-      const parsed = parseListingsSearchParams(new URLSearchParams(location.search));
+      const parsed = parseListingsSearchParams(
+        new URLSearchParams(location.search)
+      );
       setSearchKeyword(parsed.keyword);
     }
   }, [location.pathname, location.search]);
@@ -62,7 +65,7 @@ export default function Navbar() {
         aria-label="Main navigation"
       >
         <Link to="/" className="flex shrink-0 items-center gap-2 md:gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
+          <div className="bg-primary flex h-9 w-9 items-center justify-center rounded-xl">
             <Icon icon="mdi:home-outline" className="text-xl text-white" />
           </div>
           <span className="text-primary font-serif text-xl font-semibold md:text-2xl">
@@ -96,7 +99,7 @@ export default function Navbar() {
               >
                 {item.name}
                 {item.path === "/saved" && savedCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-secondary px-1 text-[10px] font-bold text-white">
+                  <span className="bg-secondary absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white">
                     {savedCount > 9 ? "9+" : savedCount}
                   </span>
                 )}
@@ -132,9 +135,13 @@ export default function Navbar() {
             Sign in
           </Link>
 
-          <a href={LIST_PROPERTY_MAILTO} className="btn-primary btn-sm hidden lg:inline-flex">
+          <button
+            type="button"
+            onClick={goToListProperty}
+            className="btn-primary btn-sm hidden lg:inline-flex"
+          >
             List property
-          </a>
+          </button>
 
           <button
             type="button"
@@ -193,7 +200,7 @@ export default function Navbar() {
                 >
                   {item.name}
                   {item.path === "/saved" && savedCount > 0 && (
-                    <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-secondary px-1.5 text-[10px] font-bold text-white">
+                    <span className="bg-secondary ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold text-white">
                       {savedCount > 9 ? "9+" : savedCount}
                     </span>
                   )}
@@ -210,12 +217,16 @@ export default function Navbar() {
                 Sign in
               </Link>
 
-              <a
-                href={LIST_PROPERTY_MAILTO}
-                className="btn-primary w-full text-center"
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  goToListProperty();
+                }}
+                className="btn-primary w-full"
               >
                 List property
-              </a>
+              </button>
             </div>
           </div>
         </div>

@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { Icon } from "@iconify/react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import RoleSelectionStep from "../components/auth/RoleSelectionStep.jsx";
 import PageShell from "../components/common/PageShell";
 import { useAuth } from "../context/AuthContext";
+import { requiresRoleSelection } from "../lib/auth/authFlow.js";
+import { getPostAuthRedirect } from "../lib/auth/postAuthRedirect.js";
 import { usePageMeta } from "../hooks/usePageMeta";
 
 export default function SignIn() {
@@ -15,7 +18,7 @@ export default function SignIn() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, signUp, authAvailable } = useAuth();
+  const { signIn, signUp, authAvailable, pendingRole, setPendingRole } = useAuth();
   const [mode, setMode] = useState("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,7 +26,9 @@ export default function SignIn() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const redirectTo = location.state?.from ?? "/";
+  const locationState = location.state ?? {};
+  const needsRole = requiresRoleSelection(locationState);
+  const showRoleStep = needsRole && !pendingRole;
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -42,7 +47,12 @@ export default function SignIn() {
           : await signUp({ email, password, name });
 
       if (result.ok && result.user) {
-        navigate(redirectTo, { replace: true });
+        const destination = getPostAuthRedirect({
+          role: result.user.role,
+          from: locationState.from,
+          intent: locationState.intent,
+        });
+        navigate(destination, { replace: true });
         return;
       }
 
@@ -56,6 +66,14 @@ export default function SignIn() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (showRoleStep) {
+    return (
+      <PageShell variant="full" className="flex min-h-[75vh] items-center justify-center px-6 py-16">
+        <RoleSelectionStep selectedRole={pendingRole} onSelect={setPendingRole} />
+      </PageShell>
+    );
   }
 
   return (
@@ -84,6 +102,26 @@ export default function SignIn() {
                 Account sign-in is launching soon. You can browse listings, save
                 properties on this device, and book inspections without an account.
               </p>
+            </div>
+          )}
+
+          {pendingRole && (
+            <div className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+              <span className="text-slate-600">
+                Continuing as{" "}
+                <span className="font-semibold text-slate-900">
+                  {pendingRole === "agent" ? "Agent" : "Buyer / User"}
+                </span>
+              </span>
+              {needsRole && (
+                <button
+                  type="button"
+                  onClick={() => setPendingRole(null)}
+                  className="font-semibold text-primary hover:underline"
+                >
+                  Change
+                </button>
+              )}
             </div>
           )}
 
