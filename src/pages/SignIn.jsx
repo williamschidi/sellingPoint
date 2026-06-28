@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Icon } from "@iconify/react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import RoleSelectionStep from "../components/auth/RoleSelectionStep.jsx";
+import { REDIRECT_MESSAGES } from "../components/auth/AuthRedirectNotice.jsx";
 import PageShell from "../components/common/PageShell";
 import { useAuth } from "../context/AuthContext";
 import { requiresRoleSelection } from "../lib/auth/authFlow.js";
@@ -29,6 +30,11 @@ export default function SignIn() {
   const locationState = location.state ?? {};
   const needsRole = requiresRoleSelection(locationState);
   const showRoleStep = needsRole && !pendingRole;
+  const redirectNotice =
+    REDIRECT_MESSAGES[locationState.reason] ??
+    (locationState.intent === "list-property"
+      ? "Sign in or create an account to list your property on SellingPoint."
+      : null);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -92,6 +98,16 @@ export default function SignIn() {
         </div>
 
         <div className="surface-panel-elevated p-8 lg:p-10">
+          {redirectNotice && authAvailable && (
+            <div
+              className="mb-6 flex items-start gap-3 rounded-xl border border-primary/10 bg-primary-subtle px-4 py-3.5 text-sm leading-6 text-primary"
+              role="status"
+            >
+              <Icon icon="lucide:info" className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+              <p>{redirectNotice}</p>
+            </div>
+          )}
+
           {!authAvailable && (
             <div
               className="mb-6 flex items-start gap-3 rounded-xl border border-primary/10 bg-primary-subtle px-4 py-3.5 text-sm leading-6 text-primary"
@@ -125,11 +141,17 @@ export default function SignIn() {
             </div>
           )}
 
-          <div className="mb-6 flex rounded-xl bg-slate-100/80 p-1">
+          <div
+            className="mb-6 flex rounded-xl bg-slate-100/80 p-1"
+            role="tablist"
+            aria-label="Authentication mode"
+          >
             {["sign-in", "sign-up"].map((tab) => (
               <button
                 key={tab}
                 type="button"
+                role="tab"
+                aria-selected={mode === tab}
                 onClick={() => {
                   setMode(tab);
                   setError("");

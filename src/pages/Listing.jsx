@@ -41,7 +41,7 @@ function Listing() {
     setSearchKeyword(filters.keyword);
   }, [filters.keyword]);
 
-  const { items, total, totalPages, currentPage, loadState, error } =
+  const { items, total, totalPages, currentPage, loadState, error, reload } =
     usePropertySearch(filters);
 
   const resultsLabel = buildResultsLabel(filters, { total });
@@ -90,6 +90,7 @@ function Listing() {
   }
 
   const isInitialLoad = loadState === "loading" && items.length === 0;
+  const isRefreshing = loadState === "loading" && items.length > 0;
 
   if (loadState === "error") {
     return (
@@ -97,9 +98,7 @@ function Listing() {
         message="Could not load properties right now."
         className="flex min-h-[50vh] flex-col items-center justify-center gap-4 bg-surface-muted px-4 text-center"
       >
-        <PageStatusButton onClick={() => navigate(buildListingsSearchUrl(filters))}>
-          Try again
-        </PageStatusButton>
+        <PageStatusButton onClick={reload}>Try again</PageStatusButton>
       </PageStatus>
     );
   }
@@ -218,6 +217,7 @@ function Listing() {
             onPageChange={handlePageChange}
             onClearFilters={clearFilters}
             isLoading={isInitialLoad}
+            isRefreshing={isRefreshing}
           />
         </div>
       </section>

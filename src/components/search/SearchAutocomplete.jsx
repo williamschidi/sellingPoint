@@ -9,10 +9,11 @@ function SearchAutocomplete({
   inputId,
   placeholder = "Search by location, title or keyword...",
   inputClassName = "",
-  autoFocus = false,
+  focusOnMount = false,
 }) {
   const listboxId = useId();
   const rootRef = useRef(null);
+  const inputRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
 
@@ -25,6 +26,12 @@ function SearchAutocomplete({
     activeIndex >= 0 && suggestions[activeIndex]
       ? `${listboxId}-option-${activeIndex}`
       : undefined;
+
+  useEffect(() => {
+    if (focusOnMount) {
+      inputRef.current?.focus();
+    }
+  }, [focusOnMount]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -72,10 +79,10 @@ function SearchAutocomplete({
   return (
     <div ref={rootRef} className="relative min-w-0 flex-1">
       <input
+        ref={inputRef}
         id={inputId}
         type="search"
         value={value}
-        autoFocus={autoFocus}
         onChange={(event) => {
           onChange(event.target.value);
           setOpen(true);

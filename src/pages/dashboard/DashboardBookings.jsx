@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { listInspectionRequests } from "../../api/services/inspectionService";
+import { useCallback, useMemo, useState } from "react";
 import BookingDetailDrawer from "../../components/dashboard/bookings/BookingDetailDrawer.jsx";
 import BookingsFilters from "../../components/dashboard/bookings/BookingsFilters.jsx";
 import BookingsMobileList from "../../components/dashboard/bookings/BookingsMobileList.jsx";
@@ -9,18 +8,16 @@ import BookingsTable from "../../components/dashboard/bookings/BookingsTable.jsx
 import DashboardConfirmDialog, {
   DashboardModal,
 } from "../../components/dashboard/bookings/DashboardConfirmDialog.jsx";
+import DataStatusPanel from "../../components/common/DataStatusPanel.jsx";
+import { useBookings } from "../../context/BookingsContext.jsx";
 import { usePropertyCatalog } from "../../context/PropertiesContext";
 import { useToast } from "../../context/ToastContext";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import {
-  normalizeBookingRecord,
   withReschedule,
   withStatusChange,
 } from "../../lib/dashboard/bookingRecord.js";
-import {
-  countBookingsByStatus,
-  filterAndSortBookings,
-} from "../../lib/dashboard/bookings.js";
+import { filterAndSortBookings } from "../../lib/dashboard/bookings.js";
 
 function BookingsSkeleton() {
   return (
@@ -45,9 +42,14 @@ export default function DashboardBookings() {
 
   const { showToast } = useToast();
   const properties = usePropertyCatalog();
-
-  const [bookings, setBookings] = useState([]);
-  const [loadState, setLoadState] = useState("loading");
+  const {
+    bookings,
+    loadState,
+    counts,
+    reload,
+    replaceBooking,
+    removeBooking,
+  } = useBookings();
   const [search, setSearch] = useState("");
   const [statusTab, setStatusTab] = useState("");
   const [inspectionDateFrom, setInspectionDateFrom] = useState("");
@@ -71,28 +73,6 @@ export default function DashboardBookings() {
     [properties]
   );
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadBookings() {
-      setLoadState("loading");
-      try {
-        const data = await listInspectionRequests();
-        if (!cancelled) {
-          setBookings(data.map((item) => normalizeBookingRecord(item)));
-          setLoadState("success");
-        }
-      } catch {
-        if (!cancelled) setLoadState("error");
-      }
-    }
-
-    loadBookings();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   const detailBooking = useMemo(
     () => bookings.find((item) => item.id === detailBookingId) ?? null,
     [bookings, detailBookingId]
@@ -110,18 +90,13 @@ export default function DashboardBookings() {
     [bookings, propertyTitleById, search, statusTab, inspectionDateFrom, inspectionDateTo, sort]
   );
 
-  const counts = useMemo(() => countBookingsByStatus(bookings), [bookings]);
-
-  const replaceBooking = useCallback((nextBooking) => {
-    setBookings((current) =>
-      current.map((item) => (item.id === nextBooking.id ? nextBooking : item))
-    );
-  }, []);
-
-  const removeBooking = useCallback((bookingId) => {
-    setBookings((current) => current.filter((item) => item.id !== bookingId));
-    setDetailBookingId((current) => (current === bookingId ? null : current));
-  }, []);
+  const removeBookingLocal = useCallback(
+    (bookingId) => {
+      removeBooking(bookingId);
+      setDetailBookingId((current) => (current === bookingId ? null : current));
+    },
+    [removeBooking]
+  );
 
   function handleAction(actionId, booking) {
     switch (actionId) {
@@ -259,7 +234,7 @@ export default function DashboardBookings() {
     }
 
     if (type === "delete") {
-      removeBooking(booking.id);
+      removeBookingLocal(booking.id);
       showToast("Booking deleted");
     }
 
@@ -303,6 +278,17 @@ export default function DashboardBookings() {
     return <BookingsSkeleton />;
   }
 
+  if (loadState === "error") {
+    return (
+      <div className="dashboard-content">
+        <DataStatusPanel
+          message="Could not load bookings. Check your connection and try again."
+          onRetry={reload}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard-content">
       <div className="mb-2 hidden lg:block">
@@ -329,12 +315,6 @@ export default function DashboardBookings() {
         onInspectionDateToChange={setInspectionDateTo}
         onSortChange={setSort}
       />
-
-      {loadState === "error" && (
-        <p className="mb-4 text-sm text-danger" role="alert">
-          Could not load bookings. Refresh the page to try again.
-        </p>
-      )}
 
       <BookingsTable
         bookings={filteredBookings}

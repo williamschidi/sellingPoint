@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
-import { listInspectionRequests } from "../api/services/inspectionService";
 import { DEFAULT_AGENT } from "../api/mock/agents.js";
 import AgentDashboardLayout from "../components/dashboard/AgentDashboardLayout";
 import DashboardTopBar from "../components/dashboard/DashboardTopBar";
+import { BookingsProvider, useBookings } from "../context/BookingsContext";
 import { useAuth } from "../context/AuthContext";
 import { usePropertiesStatus, usePropertyCatalog } from "../context/PropertiesContext";
+import DataStatusPanel from "../components/common/DataStatusPanel";
 import { usePageMeta } from "../hooks/usePageMeta";
 import DashboardBookings from "./dashboard/DashboardBookings";
 import DashboardListings from "./dashboard/DashboardListings";
@@ -50,13 +51,13 @@ function getPageMeta(pathname) {
   };
 }
 
-export default function Dashboard() {
+function DashboardShell() {
   const location = useLocation();
   const isListingsRoute = location.pathname.startsWith("/dashboard/listings");
   const { user } = useAuth();
-  const { loadState } = usePropertiesStatus();
+  const { loadState, reload: reloadProperties } = usePropertiesStatus();
   const properties = usePropertyCatalog();
-  const [pendingBookings, setPendingBookings] = useState(0);
+  const { pendingCount } = useBookings();
 
   const agent = useMemo(() => {
     if (user?.name) {
@@ -76,42 +77,36 @@ export default function Dashboard() {
     path: location.pathname,
   });
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadBookingCount() {
-      try {
-        const data = await listInspectionRequests();
-        if (!cancelled) {
-          setPendingBookings(data.filter((item) => item.status === "pending").length);
-        }
-      } catch {
-        if (!cancelled) setPendingBookings(0);
-      }
-    }
-
-    loadBookingCount();
-    return () => {
-      cancelled = true;
-    };
-  }, [location.pathname]);
-
   if (loadState === "loading") {
     return <DashboardShellSkeleton />;
+  }
+
+  if (loadState === "error") {
+    return (
+      <div className="agent-dashboard-shell">
+        <div className="flex flex-1 items-center justify-center bg-bg-soft p-6">
+          <DataStatusPanel
+            message="Could not load your property catalogue. Check your connection and try again."
+            onRetry={reloadProperties}
+            className="max-w-md rounded-2xl border border-[#e5e7eb] bg-white px-6 py-10 text-center"
+          />
+        </div>
+      </div>
+    );
   }
 
   return (
     <AgentDashboardLayout
       agent={agent}
       listingCount={properties.length}
-      pendingBookings={pendingBookings}
-      notificationCount={pendingBookings}
+      pendingBookings={pendingCount}
+      notificationCount={pendingCount}
       showDefaultTopBar={!isListingsRoute}
       topBar={
         !isListingsRoute ? (
           <DashboardTopBar
             title={getTopBarTitle(location.pathname)}
-            notificationCount={pendingBookings}
+            notificationCount={pendingCount}
           />
         ) : null
       }
@@ -122,5 +117,13 @@ export default function Dashboard() {
         <Route path="bookings" element={<DashboardBookings />} />
       </Routes>
     </AgentDashboardLayout>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <BookingsProvider>
+      <DashboardShell />
+    </BookingsProvider>
   );
 }

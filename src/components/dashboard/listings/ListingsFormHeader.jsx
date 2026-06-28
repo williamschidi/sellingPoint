@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-export default function ListingsFormHeader({ onSaveDraft, onSubmit }) {
+export default function ListingsFormHeader({ onSaveDraft, onSubmit, isSubmitting = false }) {
   return (
     <div className="dashboard-listings-header hidden lg:flex">
       <Link to="/dashboard" className="text-[13px] text-[#6b7280] no-underline hover:text-[#111827]">
@@ -22,9 +22,10 @@ export default function ListingsFormHeader({ onSaveDraft, onSubmit }) {
         <button
           type="button"
           onClick={onSubmit}
-          className="dashboard-form-btn-primary"
+          disabled={isSubmitting}
+          className="dashboard-form-btn-primary disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Submit for Review
+          {isSubmitting ? "Submitting…" : "Submit for Review"}
         </button>
       </div>
     </div>

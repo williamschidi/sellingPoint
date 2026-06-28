@@ -1,3 +1,8 @@
+/**
+ * Mock API handlers — simulate network latency and local persistence.
+ * UI must not import this module; use `api/services/*` instead.
+ * @see src/api/README.md
+ */
 import {
   getMockPropertyById,
   mockBookedSlots,

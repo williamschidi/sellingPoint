@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { searchProperties } from "../api/services/propertyService";
 import { mapPropertyToCard } from "../lib/properties/mapPropertyToCard";
 
@@ -11,8 +11,13 @@ export function usePropertySearch(filters) {
   });
   const [loadState, setLoadState] = useState("idle");
   const [error, setError] = useState(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
   const filterKey = JSON.stringify(filters);
+
+  const reload = useCallback(() => {
+    setReloadToken((current) => current + 1);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -46,7 +51,7 @@ export function usePropertySearch(filters) {
     return () => {
       cancelled = true;
     };
-  }, [filterKey]);
+  }, [filterKey, reloadToken]);
 
-  return { ...result, loadState, error };
+  return { ...result, loadState, error, reload };
 }

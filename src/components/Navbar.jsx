@@ -3,7 +3,8 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
 import { Icon } from "@iconify/react";
 
-import { useListPropertyEntry } from "../hooks/auth/useListPropertyEntry";
+import ListPropertyButton from "./auth/ListPropertyButton.jsx";
+import { useAuth } from "../context/AuthContext";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useSavedProperties } from "../context/SavedPropertiesContext";
 import PropertySearchForm from "./search/PropertySearchForm";
@@ -19,7 +20,7 @@ export default function Navbar() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const menuRef = useRef(null);
   const { savedCount } = useSavedProperties();
-  const goToListProperty = useListPropertyEntry();
+  const { isAuthenticated, isAgent, user, signOut, authAvailable } = useAuth();
 
   useFocusTrap(menuRef, isMenuOpen);
 
@@ -56,6 +57,12 @@ export default function Navbar() {
   function handleNavbarSearch(keyword) {
     navigate(buildListingsSearchUrl({ keyword }));
     setIsMenuOpen(false);
+  }
+
+  function handleSignOut() {
+    signOut();
+    setIsMenuOpen(false);
+    navigate("/");
   }
 
   return (
@@ -128,20 +135,34 @@ export default function Navbar() {
             <Icon icon="lucide:search" className="h-5 w-5" />
           </Link>
 
-          <Link
-            to="/sign-in"
-            className="btn-ghost btn-sm hidden lg:inline-flex"
-          >
-            Sign in
-          </Link>
-
-          <button
-            type="button"
-            onClick={goToListProperty}
-            className="btn-primary btn-sm hidden lg:inline-flex"
-          >
-            List property
-          </button>
+          {authAvailable && isAuthenticated ? (
+            <>
+              {isAgent && (
+                <Link to="/dashboard" className="btn-ghost btn-sm hidden lg:inline-flex">
+                  Dashboard
+                </Link>
+              )}
+              <ListPropertyButton className="btn-primary btn-sm hidden lg:inline-flex">
+                List property
+              </ListPropertyButton>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="btn-ghost btn-sm hidden lg:inline-flex"
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/sign-in" className="btn-ghost btn-sm hidden lg:inline-flex">
+                Sign in
+              </Link>
+              <ListPropertyButton className="btn-primary btn-sm hidden lg:inline-flex">
+                List property
+              </ListPropertyButton>
+            </>
+          )}
 
           <button
             type="button"
@@ -209,24 +230,49 @@ export default function Navbar() {
             )}
 
             <div className="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-4">
-              <Link
-                to="/sign-in"
-                onClick={() => setIsMenuOpen(false)}
-                className="btn-ghost w-full"
-              >
-                Sign in
-              </Link>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  goToListProperty();
-                }}
-                className="btn-primary w-full"
-              >
-                List property
-              </button>
+              {authAvailable && isAuthenticated ? (
+                <>
+                  {isAgent && (
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="btn-ghost w-full"
+                    >
+                      Dashboard
+                    </Link>
+                  )}
+                  {user?.name && (
+                    <p className="px-1 text-center text-xs text-slate-500">
+                      Signed in as {user.name}
+                    </p>
+                  )}
+                  <ListPropertyButton
+                    className="btn-primary w-full"
+                    onAfterClick={() => setIsMenuOpen(false)}
+                  >
+                    List property
+                  </ListPropertyButton>
+                  <button type="button" onClick={handleSignOut} className="btn-ghost w-full">
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/sign-in"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="btn-ghost w-full"
+                  >
+                    Sign in
+                  </Link>
+                  <ListPropertyButton
+                    className="btn-primary w-full"
+                    onAfterClick={() => setIsMenuOpen(false)}
+                  >
+                    List property
+                  </ListPropertyButton>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { Icon } from "@iconify/react";
 import { Link } from "react-router-dom";
-import { LIST_PROPERTY_MAILTO } from "../../lib/properties/constants";
+import { AGENT_DOCUMENT_REQUEST_MAILTO } from "../../lib/properties/constants";
 
 export default function PropertyDocuments({ documents = [], propertyTitle = "" }) {
   if (documents.length === 0) return null;
@@ -25,7 +25,7 @@ export default function PropertyDocuments({ documents = [], propertyTitle = "" }
           </p>
         </div>
         <a
-          href={`${LIST_PROPERTY_MAILTO}&body=Please%20send%20document%20copies%20for%20${mailtoSubject}`}
+          href={`${AGENT_DOCUMENT_REQUEST_MAILTO}&body=Please%20send%20document%20copies%20for%20${mailtoSubject}`}
           className="focus-ring inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-primary"
         >
           <Icon icon="lucide:mail" className="h-4 w-4" aria-hidden />

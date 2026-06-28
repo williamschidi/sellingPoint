@@ -1,14 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { listInspectionRequests } from "../../api/services/inspectionService";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import DashboardConfirmDialog from "../../components/dashboard/bookings/DashboardConfirmDialog.jsx";
 import DashboardBookingPanel from "../../components/dashboard/DashboardBookingPanel";
 import DashboardListingsTable from "../../components/dashboard/DashboardListingsTable";
 import DashboardStatsGrid from "../../components/dashboard/DashboardStatsGrid";
 import DashboardWelcomeBanner from "../../components/dashboard/DashboardWelcomeBanner";
+import DataStatusPanel from "../../components/common/DataStatusPanel.jsx";
+import { useBookings } from "../../context/BookingsContext.jsx";
 import { useToast } from "../../context/ToastContext";
 import { usePropertiesStatus, usePropertyCatalog } from "../../context/PropertiesContext";
-import { getListingViews } from "../../lib/dashboard/formatters.js";
-import { LIST_PROPERTY_MAILTO } from "../../lib/properties/constants";
-import { Link } from "react-router-dom";
+import { useDashboardOverviewStats } from "../../hooks/dashboard/useDashboardOverviewStats.js";
+import { withStatusChange } from "../../lib/dashboard/bookingRecord.js";
 
 function DashboardOverviewSkeleton() {
   return (
@@ -29,118 +31,102 @@ function DashboardOverviewSkeleton() {
 
 export default function DashboardOverview({ agentName }) {
   const { showToast } = useToast();
-  const { loadState } = usePropertiesStatus();
+  const { loadState: propertiesLoadState } = usePropertiesStatus();
   const properties = usePropertyCatalog();
+  const { bookings, loadState, reload, replaceBooking } = useBookings();
+  const { stats, pendingListings } = useDashboardOverviewStats();
   const bookingsRef = useRef(null);
 
-  const [requests, setRequests] = useState([]);
-  const [requestsState, setRequestsState] = useState("loading");
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadRequests() {
-      setRequestsState("loading");
-      try {
-        const data = await listInspectionRequests();
-        if (!cancelled) {
-          setRequests(data);
-          setRequestsState("success");
-        }
-      } catch {
-        if (!cancelled) setRequestsState("error");
-      }
-    }
-
-    loadRequests();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const [confirmState, setConfirmState] = useState(null);
+  const [confirmReason, setConfirmReason] = useState("");
 
   const propertyTitleById = useMemo(
     () => Object.fromEntries(properties.map((item) => [item.id, item.title])),
     [properties]
   );
 
-  const pendingBookings = requests.filter((item) => item.status === "pending").length;
-  const pendingListings = properties.filter(
-    (item) => item.verificationStatus !== "verified"
-  ).length;
-  const totalViews = useMemo(
-    () => properties.reduce((sum, item) => sum + getListingViews(item.id), 0),
-    [properties]
-  );
-  const totalInquiries = Math.max(requests.length * 16, 48);
-
-  const stats = [
-    {
-      label: "Active Listings",
-      value: properties.length,
-      valueColor: "var(--color-primary)",
-      change: "↑ 2 this month",
-      trend: "up",
-      mobileBg: "var(--color-primary-light)",
-    },
-    {
-      label: "Pending Bookings",
-      value: pendingBookings,
-      valueColor: "var(--color-gold)",
-      change: "Awaiting approval",
-      trend: "neutral",
-      mobileBg: "var(--color-gold-light)",
-    },
-    {
-      label: "Total Inquiries",
-      value: totalInquiries,
-      valueColor: "var(--color-text)",
-      change: "↑ 12% vs last month",
-      trend: "up",
-      mobileBg: "var(--color-bg-soft)",
-    },
-    {
-      label: "Profile Views",
-      value: totalViews || 324,
-      valueColor: "var(--color-text)",
-      change: "↑ 8% this week",
-      trend: "up",
-      mobileBg: "var(--color-bg-soft)",
-    },
-  ];
+  const pendingBookings = bookings.filter((item) => item.status === "pending").length;
 
   const handleApprove = useCallback(
     (requestId) => {
-      setRequests((current) =>
-        current.map((item) =>
-          item.id === requestId ? { ...item, status: "confirmed" } : item
-        )
-      );
-      showToast("Booking approved");
+      const booking = bookings.find((item) => item.id === requestId);
+      if (!booking) return;
+      setConfirmReason("");
+      setConfirmState({
+        type: "approve",
+        booking,
+        title: "Approve Booking",
+        message: "Are you sure you want to approve this inspection request?",
+        confirmLabel: "Approve",
+      });
     },
-    [showToast]
+    [bookings]
   );
 
   const handleDecline = useCallback(
     (requestId) => {
-      setRequests((current) =>
-        current.map((item) =>
-          item.id === requestId ? { ...item, status: "cancelled" } : item
-        )
-      );
-      showToast("Booking declined");
+      const booking = bookings.find((item) => item.id === requestId);
+      if (!booking) return;
+      setConfirmReason("");
+      setConfirmState({
+        type: "decline",
+        booking,
+        title: "Decline Booking",
+        message: "Are you sure you want to decline this inspection request?",
+        tone: "danger",
+        confirmLabel: "Decline",
+        reasonLabel: "Decline reason",
+        reasonPlaceholder: "e.g. Property unavailable on requested date",
+      });
     },
-    [showToast]
+    [bookings]
   );
+
+  function handleConfirm() {
+    if (!confirmState?.booking) return;
+
+    const booking =
+      bookings.find((item) => item.id === confirmState.booking.id) ??
+      confirmState.booking;
+
+    if (confirmState.type === "approve") {
+      replaceBooking(
+        withStatusChange(booking, "confirmed", "Booking approved by agent")
+      );
+      showToast("Booking approved successfully.");
+    }
+
+    if (confirmState.type === "decline") {
+      const note = confirmReason.trim() || "Booking declined by agent";
+      replaceBooking(withStatusChange(booking, "declined", note));
+      showToast("Booking declined successfully.");
+    }
+
+    setConfirmState(null);
+    setConfirmReason("");
+  }
 
   function scrollToBookings() {
     const target =
-      bookingsRef.current ??
-      document.getElementById("dashboard-booking-requests");
+      bookingsRef.current ?? document.getElementById("dashboard-booking-requests");
     target?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  if (loadState === "loading") {
+  if (propertiesLoadState === "loading" || loadState === "loading") {
     return <DashboardOverviewSkeleton />;
+  }
+
+  if (loadState === "error") {
+    return (
+      <div className="dashboard-content">
+        <DataStatusPanel
+          message="Could not load booking requests."
+          onRetry={reload}
+          actionTo="/dashboard/bookings"
+          actionLabel="Open Bookings page"
+        />
+      </div>
+    );
   }
 
   return (
@@ -161,18 +147,17 @@ export default function DashboardOverview({ agentName }) {
         >
           + Add Listing
         </Link>
-        <button
-          type="button"
-          onClick={scrollToBookings}
-          className="flex-1 rounded-[10px] border border-[#e5e7eb] bg-bg-soft py-2.5 text-[11px] font-semibold text-[#111827]"
+        <Link
+          to="/dashboard/bookings"
+          className="flex-1 rounded-[10px] border border-[#e5e7eb] bg-bg-soft py-2.5 text-center text-[11px] font-semibold text-[#111827] no-underline"
         >
           View Bookings
-        </button>
+        </Link>
       </div>
 
       <div className="mb-3 lg:hidden" ref={bookingsRef}>
         <DashboardBookingPanel
-          requests={requests}
+          requests={bookings}
           propertyTitleById={propertyTitleById}
           onApprove={handleApprove}
           onDecline={handleDecline}
@@ -185,18 +170,30 @@ export default function DashboardOverview({ agentName }) {
 
         <DashboardBookingPanel
           id="dashboard-booking-requests"
-          requests={requests}
+          requests={bookings}
           propertyTitleById={propertyTitleById}
           onApprove={handleApprove}
           onDecline={handleDecline}
         />
       </div>
 
-      {requestsState === "error" && (
-        <p className="mt-4 text-center text-sm text-danger" role="alert">
-          Could not load booking requests. Refresh to try again.
-        </p>
-      )}
+      <DashboardConfirmDialog
+        open={Boolean(confirmState)}
+        title={confirmState?.title ?? ""}
+        message={confirmState?.message ?? ""}
+        tone={confirmState?.tone}
+        reasonLabel={confirmState?.reasonLabel}
+        reasonPlaceholder={confirmState?.reasonPlaceholder}
+        reasonValue={confirmReason}
+        onReasonChange={setConfirmReason}
+        reasonOptional
+        confirmLabel={confirmState?.confirmLabel ?? "Confirm"}
+        onConfirm={handleConfirm}
+        onCancel={() => {
+          setConfirmState(null);
+          setConfirmReason("");
+        }}
+      />
     </div>
   );
 }

@@ -1,6 +1,8 @@
+import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getListPropertyNavigationTarget } from "../../lib/auth/authFlow.js";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useToast } from "../../context/ToastContext.jsx";
 
 /**
  * Centralized handler for the "List property" entry point.
@@ -9,9 +11,13 @@ import { useAuth } from "../../context/AuthContext.jsx";
 export function useListPropertyEntry() {
   const navigate = useNavigate();
   const auth = useAuth();
+  const { showToast } = useToast();
 
-  return function goToListProperty() {
-    if (auth.status === "loading") return;
+  return useCallback(() => {
+    if (auth.status === "loading") {
+      showToast("Checking your session…");
+      return;
+    }
 
     const target = getListPropertyNavigationTarget({
       isAuthenticated: auth.isAuthenticated,
@@ -24,5 +30,5 @@ export function useListPropertyEntry() {
     }
 
     navigate(target.to);
-  };
+  }, [auth.status, auth.isAuthenticated, auth.user, navigate, showToast]);
 }

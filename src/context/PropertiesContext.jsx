@@ -1,3 +1,7 @@
+/**
+ * Global property catalogue — fetched once on app boot via propertyService.
+ * TODO (backend): Consider route-level loading or stale-while-revalidate when API latency matters.
+ */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   getProperties,

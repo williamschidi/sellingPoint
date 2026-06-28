@@ -1,3 +1,7 @@
+/**
+ * Saved-search persistence (localStorage until backend user profiles ship).
+ * TODO: Replace with GET/POST /users/me/saved-searches when API is available.
+ */
 import { buildListingsSearchUrl } from "../../lib/search/buildSearchParams.js";
 
 const STORAGE_KEY = "sellingpoint:saved-searches";

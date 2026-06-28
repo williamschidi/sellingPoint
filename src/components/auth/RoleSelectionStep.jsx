@@ -44,6 +44,7 @@ export default function RoleSelectionStep({ selectedRole, onSelect, onBackHref =
               key={option.id}
               type="button"
               onClick={() => onSelect(option.id)}
+              aria-pressed={isSelected}
               className={`flex w-full items-start gap-4 rounded-xl border px-4 py-4 text-left transition ${
                 isSelected
                   ? "border-primary bg-primary-subtle shadow-sm"

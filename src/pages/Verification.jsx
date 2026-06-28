@@ -1,6 +1,6 @@
 import { Icon } from "@iconify/react";
 import { Link } from "react-router-dom";
-import { LIST_PROPERTY_MAILTO } from "../lib/properties/constants";
+import ListPropertyButton from "../components/auth/ListPropertyButton.jsx";
 import PageShell from "../components/common/PageShell";
 import { usePageMeta } from "../hooks/usePageMeta";
 
@@ -72,9 +72,9 @@ export default function Verification() {
           <Link to="/properties" className="btn-primary">
             Browse verified listings
           </Link>
-          <a href={LIST_PROPERTY_MAILTO} className="btn-ghost">
+          <ListPropertyButton className="btn-ghost">
             Submit a listing for review
-          </a>
+          </ListPropertyButton>
         </div>
       </div>
     </PageShell>

@@ -177,13 +177,12 @@ function ListingFilter({
             onChange={setPriceRange}
             ariaLabel={["Minimum price", "Maximum price"]}
             renderTrack={({ props, children }) => (
+              // react-range supplies pointer handlers on the track wrapper
               <div
-                onMouseDown={props.onMouseDown}
-                onTouchStart={props.onTouchStart}
+                {...props}
                 className="flex h-6 w-full items-center"
               >
                 <div
-                  ref={props.ref}
                   className="h-1 w-full rounded-full"
                   style={{
                     background: getTrackBackground({
@@ -278,6 +277,8 @@ function ListingFilter({
       <aside
         id="listing-filters"
         ref={drawerRef}
+        role={showFilter ? "dialog" : undefined}
+        aria-modal={showFilter ? "true" : undefined}
         className={`w-full shrink-0 lg:w-70 ${
           showFilter
             ? "fixed inset-y-0 left-0 z-50 w-[min(100%,20rem)] overflow-y-auto bg-white p-4 shadow-xl lg:static lg:block lg:shadow-none"

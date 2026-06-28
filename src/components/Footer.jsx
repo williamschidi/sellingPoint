@@ -4,8 +4,8 @@ import { HashLink } from "react-router-hash-link";
 import { usePropertyCatalog } from "../context/PropertiesContext";
 import { buildListingsSearchUrl } from "../lib/search/buildSearchParams";
 import { getHomepageStats } from "../data/homepage";
+import { FooterAgentsColumn } from "./auth/FooterAgentsColumn.jsx";
 import {
-  LIST_PROPERTY_MAILTO,
   SOCIAL_LINKS,
 } from "../lib/properties/constants";
 
@@ -31,14 +31,7 @@ const FOOTER_LINKS = {
     },
     { label: "Verified Only", to: buildListingsSearchUrl({ verification: "Verified" }) },
   ],
-  agents: [
-    { label: "List a Property", to: LIST_PROPERTY_MAILTO },
-    {
-      label: "Agent Enquiries",
-      to: "mailto:nnaa4good@gmail.com?subject=Agent%20Partnership%20Enquiry",
-    },
-    { label: "Agent Dashboard", to: "/dashboard" },
-  ],
+  agents: [],
   company: [
     { label: "About Selling Point", to: "/#about", hash: true },
     { label: "How It Works", to: "/#how-it-works", hash: true },
@@ -199,7 +192,7 @@ export default function Footer() {
             </div>
 
             <LinkColumn title="Properties" links={FOOTER_LINKS.properties} />
-            <LinkColumn title="For Agents" links={FOOTER_LINKS.agents} />
+            <FooterAgentsColumn />
             <LinkColumn title="Company" links={FOOTER_LINKS.company} />
 
             <div>

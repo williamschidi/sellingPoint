@@ -32,7 +32,7 @@ export default function PropertySearchForm({
   variant = "listing",
   inputId = "property-search",
   ariaLabel = "Search properties by location, title, or keyword",
-  autoFocus = false,
+  focusOnMount = false,
   className = "",
 }) {
   const properties = usePropertyCatalog();
@@ -65,7 +65,7 @@ export default function PropertySearchForm({
           onChange={onKeywordChange}
           properties={properties}
           placeholder="Search location or keyword..."
-          autoFocus={autoFocus}
+          focusOnMount={focusOnMount}
           inputClassName={
             variant === "navbar"
               ? "h-9 rounded-lg border border-slate-200 bg-slate-50 pr-3 pl-9 text-sm focus:border-slate-300 focus:bg-white focus:ring-2 focus:ring-primary/20"

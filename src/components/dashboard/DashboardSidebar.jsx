@@ -96,11 +96,13 @@ export default function DashboardSidebar({
             <button
               key={item.id}
               type="button"
-              className="dashboard-sidebar-item w-full text-left"
+              disabled
+              title="Coming soon"
+              className="dashboard-sidebar-item w-full cursor-not-allowed text-left opacity-50"
             >
               <Icon icon={item.icon} className="h-4 w-4 shrink-0 opacity-80" aria-hidden />
               <span>{item.label}</span>
-              {renderBadge(item)}
+              <span className="ml-auto text-[10px] text-white/40">Soon</span>
             </button>
           )
         )}
@@ -112,10 +114,13 @@ export default function DashboardSidebar({
           <button
             key={item.id}
             type="button"
-            className="dashboard-sidebar-item w-full text-left"
+            disabled
+            title="Coming soon"
+            className="dashboard-sidebar-item w-full cursor-not-allowed text-left opacity-50"
           >
             <Icon icon={item.icon} className="h-4 w-4 shrink-0 opacity-80" aria-hidden />
             <span>{item.label}</span>
+            <span className="ml-auto text-[10px] text-white/40">Soon</span>
           </button>
         ))}
       </div>

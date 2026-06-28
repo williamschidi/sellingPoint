@@ -37,7 +37,9 @@ export default function DashboardConfirmDialog({
     <div
       className="dashboard-modal-backdrop"
       role="presentation"
-      onClick={onCancel}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onCancel();
+      }}
     >
       <div
         ref={panelRef}
@@ -46,7 +48,6 @@ export default function DashboardConfirmDialog({
         aria-labelledby="dashboard-confirm-title"
         aria-describedby="dashboard-confirm-message"
         className="dashboard-modal-panel"
-        onClick={(event) => event.stopPropagation()}
       >
         <h2 id="dashboard-confirm-title" className="text-lg font-bold text-[#111827]">
           {title}
@@ -109,14 +110,19 @@ export function DashboardModal({ open, title, children, onClose }) {
   if (!open) return null;
 
   return (
-    <div className="dashboard-modal-backdrop" role="presentation" onClick={onClose}>
+    <div
+      className="dashboard-modal-backdrop"
+      role="presentation"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="dashboard-modal-title"
         className="dashboard-modal-panel max-h-[90vh] overflow-y-auto"
-        onClick={(event) => event.stopPropagation()}
       >
         <div className="mb-4 flex items-start justify-between gap-3">
           <h2 id="dashboard-modal-title" className="text-lg font-bold text-[#111827]">

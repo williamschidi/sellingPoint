@@ -13,6 +13,7 @@ import TrustInspectionCallout from "../components/property/TrustInspectionCallou
 import VerificationBadge from "../components/property/VerificationBadge";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { useProperty } from "../hooks/useProperty";
+import { useToggleSavedWithToast } from "../hooks/useToggleSavedWithToast";
 import {
   formatLocationFull,
   formatLocationShort,
@@ -24,6 +25,7 @@ function PropertyDetail() {
   const { id } = useParams();
   const { property, loadState, reload } = useProperty(id);
   const [activeImage, setActiveImage] = useState(null);
+  const { isSaved, handleToggleSave } = useToggleSavedWithToast();
 
   usePageMeta({
     title: property?.title ?? "Property details",
@@ -106,6 +108,19 @@ function PropertyDetail() {
                   <span className="inline-flex items-center rounded-full bg-primary-subtle px-3 py-1 text-xs font-semibold text-primary ring-1 ring-primary/10">
                     {property.propertyType}
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleSave(property.id)}
+                    className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 transition hover:border-primary/30 hover:text-primary"
+                    aria-pressed={isSaved(property.id)}
+                  >
+                    <Icon
+                      icon={isSaved(property.id) ? "lucide:heart" : "lucide:heart"}
+                      className={`h-3.5 w-3.5 ${isSaved(property.id) ? "fill-primary text-primary" : ""}`}
+                      aria-hidden
+                    />
+                    {isSaved(property.id) ? "Saved" : "Save property"}
+                  </button>
                 </div>
 
                 <h1 className="mt-3 max-w-2xl font-serif text-2xl leading-tight tracking-tight text-slate-900 lg:text-[2rem]">

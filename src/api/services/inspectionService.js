@@ -1,3 +1,8 @@
+/**
+ * Inspection booking API facade.
+ * When USE_MOCK_DATA is false, posts to /inspections via apiRequest.
+ * @see src/api/README.md
+ */
 import { USE_MOCK_DATA } from "../config.js";
 import { apiRequest } from "../client.js";
 import {

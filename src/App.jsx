@@ -1,7 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import AgentRoute from "./components/auth/AgentRoute";
-import AuthRedirectNotice from "./components/auth/AuthRedirectNotice";
 import ErrorBoundaryRoute from "./components/common/ErrorBoundaryRoute";
 import PageLoader from "./components/common/PageLoader";
 import Layout from "./Layout";
@@ -45,12 +44,7 @@ function App() {
           </Route>
           <Route
             path="/bookInspection"
-            element={
-              <Navigate
-                to="/book-inspection/lekki-phase-1-residential-plot"
-                replace
-              />
-            }
+            element={<Navigate to="/properties" replace />}
           />
         </Routes>
       </Suspense>

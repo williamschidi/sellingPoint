@@ -12,6 +12,7 @@ export default function ListingGrid({
   onPageChange,
   onClearFilters,
   isLoading = false,
+  isRefreshing = false,
 }) {
   const { isSaved, handleToggleSave } = useToggleSavedWithToast();
   const pages = getPaginationRange(currentPage, totalPages);
@@ -40,7 +41,18 @@ export default function ListingGrid({
   }
 
   return (
-    <section className="flex-1" aria-label="Property results">
+    <section className="relative flex-1" aria-label="Property results">
+      {isRefreshing && (
+        <div
+          className="absolute inset-0 z-10 flex items-start justify-center bg-white/60 pt-24 backdrop-blur-[1px]"
+          role="status"
+          aria-live="polite"
+        >
+          <p className="rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm ring-1 ring-slate-200">
+            Updating results…
+          </p>
+        </div>
+      )}
       <div className="space-y-8 p-6 lg:p-8">
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {items.map((property) => (

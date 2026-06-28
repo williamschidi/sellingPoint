@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import BookingRequestCard from "./BookingRequestCard.jsx";
 
 export default function DashboardBookingPanel({
@@ -9,6 +10,7 @@ export default function DashboardBookingPanel({
   id,
 }) {
   const pendingCount = requests.filter((item) => item.status === "pending").length;
+  const visibleRequests = compact ? requests.slice(0, 3) : requests;
 
   return (
     <section
@@ -25,28 +27,39 @@ export default function DashboardBookingPanel({
             </span>
           )}
         </h2>
+        {compact && (
+          <Link to="/dashboard/bookings" className="dashboard-btn-ghost-sm no-underline">
+            View all
+          </Link>
+        )}
       </div>
 
       <div className={compact ? "p-3.5" : "p-3"}>
         {requests.length === 0 ? (
-          <p className="px-2 py-6 text-center text-sm text-[#6b7280]">
-            New inspection bookings from buyers will appear here.
-          </p>
+          <div className="px-2 py-6 text-center">
+            <p className="text-sm text-[#6b7280]">
+              New inspection bookings from buyers will appear here.
+            </p>
+            <Link
+              to="/dashboard/bookings"
+              className="mt-3 inline-block text-sm font-semibold text-primary hover:underline"
+            >
+              Open Bookings →
+            </Link>
+          </div>
         ) : (
-          requests
-            .filter((_, index) => (compact ? index < 3 : true))
-            .map((request) => (
-              <BookingRequestCard
-                key={request.id}
-                request={request}
-                propertyTitle={
-                  propertyTitleById[request.propertyId] ?? request.propertyId
-                }
-                onApprove={onApprove}
-                onDecline={onDecline}
-                compact={compact}
-              />
-            ))
+          visibleRequests.map((request) => (
+            <BookingRequestCard
+              key={request.id}
+              request={request}
+              propertyTitle={
+                propertyTitleById[request.propertyId] ?? request.propertyId
+              }
+              onApprove={onApprove}
+              onDecline={onDecline}
+              compact={compact}
+            />
+          ))
         )}
       </div>
     </section>

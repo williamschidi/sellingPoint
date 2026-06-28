@@ -22,6 +22,7 @@ export default function DashboardListings() {
 
   const { showToast } = useToast();
   const [form, setForm] = useState(LISTING_FORM_INITIAL);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const progress = useMemo(() => computeListingProgress(form), [form]);
 
@@ -48,16 +49,32 @@ export default function DashboardListings() {
   }
 
   function handleSaveDraft() {
-    showToast("Listing saved as draft");
+    showToast("Draft saved locally — backend sync coming soon.");
   }
 
   function handleSubmit() {
-    showToast("Listing submitted for verification");
+    const { basic, location, land, images } = progress;
+    if (basic < 100 || location < 100 || land < 100 || images < 100) {
+      showToast("Complete all required sections before submitting.", "error");
+      return;
+    }
+
+    setIsSubmitting(true);
+    window.setTimeout(() => {
+      setIsSubmitting(false);
+      showToast(
+        "Form validated — listing submission will be enabled once the backend is connected."
+      );
+    }, 400);
   }
 
   return (
     <>
-      <ListingsFormHeader onSaveDraft={handleSaveDraft} onSubmit={handleSubmit} />
+      <ListingsFormHeader
+        onSaveDraft={handleSaveDraft}
+        onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
+      />
 
       <div className="dashboard-listings-header flex flex-col gap-3 px-5 py-4 lg:hidden">
         <Link
@@ -71,9 +88,10 @@ export default function DashboardListings() {
           <button
             type="button"
             onClick={handleSubmit}
-            className="dashboard-form-btn-primary shrink-0"
+            disabled={isSubmitting}
+            className="dashboard-form-btn-primary shrink-0 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Submit
+            {isSubmitting ? "Submitting…" : "Submit"}
           </button>
         </div>
       </div>

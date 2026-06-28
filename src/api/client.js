@@ -1,3 +1,7 @@
+/**
+ * HTTP client for production API calls.
+ * TODO: Add credentials / auth headers when backend session cookies ship.
+ */
 import { API_BASE_URL } from "./config.js";
 
 export class ApiError extends Error {

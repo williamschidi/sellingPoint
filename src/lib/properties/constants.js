@@ -75,6 +75,9 @@ export const STATE_QUERY_MAP = {
 export const LIST_PROPERTY_MAILTO =
   "mailto:nnaa4good@gmail.com?subject=List%20a%20Property%20on%20SellingPoint";
 
+/** @deprecated Use ListPropertyButton / useListPropertyEntry for listing CTAs. Kept for document-request mailto links. */
+export const AGENT_DOCUMENT_REQUEST_MAILTO = LIST_PROPERTY_MAILTO;
+
 export const SUPPORT_MAILTO =
   "mailto:nnaa4good@gmail.com?subject=SellingPoint%20Support";
 

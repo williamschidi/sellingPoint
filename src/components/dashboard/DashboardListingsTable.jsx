@@ -58,7 +58,7 @@ export default function DashboardListingsTable({ properties }) {
                     to={`/propertyDetail/${property.id}`}
                     className="dashboard-tbl-action dashboard-tbl-view no-underline"
                   >
-                    Edit
+                    View
                   </Link>
                 </td>
               </tr>

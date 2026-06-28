@@ -29,8 +29,8 @@ function ToastViewport() {
   return (
     <div
       className="pointer-events-none fixed inset-x-0 bottom-6 z-[100] flex justify-center px-4 sm:bottom-8"
-      role="status"
-      aria-live="polite"
+      role={toast.variant === "error" ? "alert" : "status"}
+      aria-live={toast.variant === "error" ? "assertive" : "polite"}
     >
       <div
         className={`animate-[toast-in_0.4s_ease-out] flex max-w-md items-center gap-3 rounded-2xl px-5 py-4 text-sm font-medium text-white shadow-2xl ring-1 ring-white/10 backdrop-blur-md ${style.bar}`}

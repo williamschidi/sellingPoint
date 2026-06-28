@@ -1,3 +1,7 @@
+/**
+ * Static property catalogue fixtures for mock mode.
+ * Replace with backend seed data or remove when API is live.
+ */
 import { buildPropertyImageUrls, MOCK_IMAGE_FALLBACK } from "../../lib/properties/mockMedia.js";
 import { resolveMockAgent } from "./agents.js";
 

@@ -26,6 +26,7 @@ const NAV_ITEMS = [
     id: "profile",
     label: "Profile",
     icon: "lucide:user",
+    comingSoon: true,
   },
 ];
 
@@ -53,6 +54,11 @@ export default function DashboardMobileNav({ pendingBookings = 0 }) {
                   }`}
                   aria-hidden
                 />
+                {item.badge && pendingBookings > 0 && (
+                  <span className="absolute top-0 right-[18px] flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-danger text-[8px] font-bold text-white">
+                    {pendingBookings}
+                  </span>
+                )}
                 <span>{item.label}</span>
               </>
             )}
@@ -61,14 +67,11 @@ export default function DashboardMobileNav({ pendingBookings = 0 }) {
           <button
             key={item.id}
             type="button"
-            className="dashboard-mobile-nav-item relative"
+            disabled
+            title="Coming soon"
+            className="dashboard-mobile-nav-item relative cursor-not-allowed opacity-50"
           >
             <Icon icon={item.icon} className="h-[18px] w-[18px] text-[#6b7280]" aria-hidden />
-            {item.badge && pendingBookings > 0 && (
-              <span className="absolute top-0 right-[18px] flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-danger text-[8px] font-bold text-white">
-                {pendingBookings}
-              </span>
-            )}
             <span>{item.label}</span>
           </button>
         )

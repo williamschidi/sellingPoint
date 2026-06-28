@@ -1,3 +1,8 @@
+/**
+ * Authentication API facade.
+ * Mock mode uses lib/auth/mockAuthStorage.js; production uses apiRequest.
+ * @see src/api/README.md
+ */
 import { USE_MOCK_DATA } from "../config.js";
 import { apiRequest } from "../client.js";
 import { ROLE_BUYER } from "../../lib/auth/constants.js";

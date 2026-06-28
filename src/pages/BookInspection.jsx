@@ -89,7 +89,7 @@ export default function BookInspection() {
             <Icon icon="lucide:arrow-left" className="h-4 w-4" aria-hidden />
             Back
           </button>
-          <p className="text-sm font-semibold tracking-tight text-slate-900">Book inspection</p>
+          <h1 className="text-sm font-semibold tracking-tight text-slate-900">Book inspection</h1>
           <Link
             to={`/propertyDetail/${propertyId}`}
             className="text-sm font-semibold text-primary transition hover:underline"

@@ -1,3 +1,8 @@
+/**
+ * Property catalogue API facade.
+ * When USE_MOCK_DATA is false, calls GET /properties via apiRequest.
+ * @see src/api/README.md
+ */
 import { USE_MOCK_DATA } from "../config.js";
 import { apiRequest } from "../client.js";
 import {

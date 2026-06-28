@@ -1,5 +1,6 @@
 import { Icon } from "@iconify/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 
 export default function PropertyImageGallery({
   images = [],
@@ -10,16 +11,15 @@ export default function PropertyImageGallery({
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const lightboxRef = useRef(null);
+  useFocusTrap(lightboxRef, lightboxOpen);
 
   const activeIndex = images.findIndex((img) => img === activeImage);
 
-  const openLightbox = useCallback(
-    (index) => {
-      setLightboxIndex(index >= 0 ? index : 0);
-      setLightboxOpen(true);
-    },
-    []
-  );
+  const openLightbox = useCallback((index) => {
+    setLightboxIndex(index >= 0 ? index : 0);
+    setLightboxOpen(true);
+  }, []);
 
   const closeLightbox = useCallback(() => {
     setLightboxOpen(false);
@@ -42,12 +42,8 @@ export default function PropertyImageGallery({
       if (event.key === "ArrowRight") showNext();
     }
 
-    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", onKeyDown);
-    };
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, [lightboxOpen, closeLightbox, showPrevious, showNext]);
 
   useEffect(() => {
@@ -107,57 +103,58 @@ export default function PropertyImageGallery({
       {lightboxOpen && (
         <div
           className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-label={`${propertyTitle} photo gallery`}
-          onClick={closeLightbox}
+          role="presentation"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) closeLightbox();
+          }}
         >
-          <button
-            type="button"
-            onClick={closeLightbox}
-            className="focus-ring absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
-            aria-label="Close gallery"
+          <div
+            ref={lightboxRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${propertyTitle} photo gallery`}
+            className="relative flex max-h-full max-w-full items-center justify-center"
           >
-            <Icon icon="lucide:x" className="h-5 w-5" aria-hidden />
-          </button>
+            <button
+              type="button"
+              onClick={closeLightbox}
+              className="focus-ring absolute top-0 right-0 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+              aria-label="Close gallery"
+            >
+              <Icon icon="lucide:x" className="h-5 w-5" aria-hidden />
+            </button>
 
-          {images.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  showPrevious();
-                }}
-                className="focus-ring absolute left-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
-                aria-label="Previous photo"
-              >
-                <Icon icon="lucide:chevron-left" className="h-5 w-5" aria-hidden />
-              </button>
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  showNext();
-                }}
-                className="focus-ring absolute right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
-                aria-label="Next photo"
-              >
-                <Icon icon="lucide:chevron-right" className="h-5 w-5" aria-hidden />
-              </button>
-            </>
-          )}
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={showPrevious}
+                  className="focus-ring absolute top-1/2 left-0 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+                  aria-label="Previous photo"
+                >
+                  <Icon icon="lucide:chevron-left" className="h-5 w-5" aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  onClick={showNext}
+                  className="focus-ring absolute top-1/2 right-0 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+                  aria-label="Next photo"
+                >
+                  <Icon icon="lucide:chevron-right" className="h-5 w-5" aria-hidden />
+                </button>
+              </>
+            )}
 
-          <img
-            src={images[lightboxIndex]}
-            alt={`${propertyTitle} — photo ${lightboxIndex + 1} of ${images.length}`}
-            className="max-h-[85vh] max-w-full rounded-lg object-contain"
-            onClick={(event) => event.stopPropagation()}
-          />
+            <img
+              src={images[lightboxIndex]}
+              alt={`${propertyTitle} — ${lightboxIndex + 1} of ${images.length}`}
+              className="max-h-[85vh] max-w-full rounded-lg object-contain"
+            />
 
-          <p className="absolute bottom-6 text-sm font-medium text-white/80">
-            {lightboxIndex + 1} / {images.length}
-          </p>
+            <p className="absolute -bottom-8 text-sm font-medium text-white/80">
+              {lightboxIndex + 1} / {images.length}
+            </p>
+          </div>
         </div>
       )}
     </>
